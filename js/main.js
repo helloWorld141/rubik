@@ -2,7 +2,9 @@ let container;
 let camera, scene, renderer;
 let mousedown = false, mouseup = false, mousedrag = false;
 let rpp = Math.PI / 180; // radian per pixel
-let d = 5;
+let d = 10;
+let cubeDim = 1;
+let n = 3; // dimension of rubik => number of cubes = n**3
 const epsilon = 0.05;
 
 ////// entry point //////
@@ -24,18 +26,32 @@ function init() {
     container.appendChild(renderer.domElement);
 
     const geometry = new THREE.BoxGeometry();
-    // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const commonAttr = {side: THREE.DoubleSide, vertexColors: false};
     const material = [
-        new THREE.MeshBasicMaterial({color:0xff0000, transparent:true, opacity:0.8, side: THREE.DoubleSide}),
-        new THREE.MeshBasicMaterial({color:0x00ff00, transparent:true, opacity:0.8, side: THREE.DoubleSide}),
-        new THREE.MeshBasicMaterial({color:0x0000ff, transparent:true, opacity:0.8, side: THREE.DoubleSide}),
-        new THREE.MeshBasicMaterial({color:0xffff00, transparent:true, opacity:0.8, side: THREE.DoubleSide}),
-        new THREE.MeshBasicMaterial({color:0xff00ff, transparent:true, opacity:0.8, side: THREE.DoubleSide}),
-        new THREE.MeshBasicMaterial({color:0x00ffff, transparent:true, opacity:0.8, side: THREE.DoubleSide}),
+        new THREE.MeshBasicMaterial({color:'red', ...commonAttr}),
+        new THREE.MeshBasicMaterial({color:0x00ff00, ...commonAttr}),
+        new THREE.MeshBasicMaterial({color:0x0000ff, ...commonAttr}),
+        new THREE.MeshBasicMaterial({color:0xffff00, ...commonAttr}),
+        new THREE.MeshBasicMaterial({color:'white',  ...commonAttr}),
+        new THREE.MeshBasicMaterial({color:0x00ffff, ...commonAttr}),
     ];
-    const cube = new THREE.Mesh(geometry, material);
-    console.log(geometry);
-    scene.add(cube);
+    const edges = new THREE.EdgesGeometry( geometry );
+    const line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0x000000 } ) );
+
+    const rubik = new THREE.Group();
+    for (let idx=0; idx<27; idx++) {
+        const cube = new THREE.Mesh(geometry, material);
+        const edgesMaterial = new THREE.LineBasicMaterial( { color: 'black', linewidth: 10 } );
+        const edges = new THREE.EdgesGeometry(cube.geometry);
+        const edgesSegment = new THREE.LineSegments(edges, edgesMaterial);
+        cube.add(edgesSegment);
+        const [i, j, k] = one2three(idx, n);
+        pos = cubePositionToVector3(i, j, k, n, cubeDim);
+        cube.position.set(...pos);
+        rubik.add(cube);
+    }
+    scene.add(rubik);
+
 
     camera.position.z = d;
 
@@ -57,23 +73,21 @@ function init() {
             console.log("Mouse dragged");
             mousedrag = true;
             /// change camera angle based on mouse movement ///
-            // console.log(e.movementX, e.movementY);
             // Let R be the camera vector. Rxy is the projection of R on plane Oxy
             const dPhi = rpp * e.movementX; // angle between Rxy and Ox
             const dTheta = rpp * e.movementY; // angle between R and Oz
-            const R = camera.position.sub(cube.position); // relative position of camera to cube
+            const R = camera.position.sub(rubik.position); // relative position of camera to cube
             const r = R.length();
             let theta = Math.acos(R.y / r);
             let phi = Math.atan2(R.x, R.z)
-            theta = Math.min(Math.max(theta - dTheta, 0), Math.PI);
+            // theta = Math.min(Math.max(theta - dTheta, 0), Math.PI);
+            theta = theta - dTheta;
             phi = phi - dPhi;
-            const spherical = THREE.Spherical(r, phi, theta);
-            // camera.position.setFromSpherical(spherical);
             camera.position.z = r * Math.sin(theta) * Math.cos(phi);
             camera.position.x = r * Math.sin(theta) * Math.sin(phi);
             camera.position.y = r * Math.cos(theta);
 
-            camera.lookAt(cube.position);
+            camera.lookAt(rubik.position);
             console.log(camera.position);
         } else {
             mousedrag = false;
