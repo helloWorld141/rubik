@@ -28,12 +28,12 @@ function init() {
     const geometry = new THREE.BoxGeometry();
     const commonAttr = {side: THREE.DoubleSide, vertexColors: false};
     const material = [
-        new THREE.MeshBasicMaterial({color:'red', ...commonAttr}),
-        new THREE.MeshBasicMaterial({color:0x00ff00, ...commonAttr}),
-        new THREE.MeshBasicMaterial({color:0x0000ff, ...commonAttr}),
-        new THREE.MeshBasicMaterial({color:0xffff00, ...commonAttr}),
-        new THREE.MeshBasicMaterial({color:'white',  ...commonAttr}),
-        new THREE.MeshBasicMaterial({color:0x00ffff, ...commonAttr}),
+        new THREE.MeshBasicMaterial({color:'blue', ...commonAttr}), // right
+        new THREE.MeshBasicMaterial({color:'green', ...commonAttr}),// left
+        new THREE.MeshBasicMaterial({color:'white', ...commonAttr}),// top
+        new THREE.MeshBasicMaterial({color:'yellow', ...commonAttr}),// bottom
+        new THREE.MeshBasicMaterial({color:'red',  ...commonAttr}), // front
+        new THREE.MeshBasicMaterial({color:'orange', ...commonAttr}),// back
     ];
     const edges = new THREE.EdgesGeometry( geometry );
     const line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0x000000 } ) );
