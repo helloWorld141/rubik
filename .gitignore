@@ -1,3 +1,7 @@
-backend/env
-backend/.idea
+env
 __pycache__
+.idea
+.vscode
+dist
+node_modules
+package-lock.json
